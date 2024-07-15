@@ -28,6 +28,15 @@ function init() {
   window.requestAnimationFrame(draw)
 }
 
+function distanceBetweenPoints(
+  { x1, y1 }: { x1: number; y1: number },
+  { x2, y2 }: { x2: number; y2: number }
+): number {
+  const x = x2 - x1
+  const y = y2 - y1
+  return Math.sqrt(x * x + y * y)
+}
+
 function updateCirclePositions(circles: Circle[]) {
   // initialising circles
   if (circles.length == 0) {
@@ -39,11 +48,27 @@ function updateCirclePositions(circles: Circle[]) {
       )
       circles.push(circle)
     }
-  } else {
-    for (let i = 0; i < 2; i++) {
-      circles[i].x = currentMousePosition.x + gapBetweenCircles * i
+    return
+  }
+  for (let i = 0; i < 2; i++) {
+    if (i == 0) {
+      circles[i].x = currentMousePosition.x
       circles[i].y = currentMousePosition.y
+      // console.log("updated circle 0")
+      continue
     }
+
+    /// need to add stuff here
+
+    circles[i].x = currentMousePosition.x + gapBetweenCircles * i
+    circles[i].y = currentMousePosition.y + gapBetweenCircles * i
+    console.log(
+      distanceBetweenPoints(
+        { x1: circles[i - 1].x, y1: circles[i - 1].y },
+        { x2: circles[i].x, y2: circles[i].y }
+      )
+    )
+    // console.log("updated circle 1")
   }
 }
 
