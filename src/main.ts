@@ -40,7 +40,7 @@ function distanceBetweenPoints(
 function updateCirclePositions(circles: Circle[]) {
   // initialising circles
   if (circles.length == 0) {
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 4; i++) {
       const circle = new Circle(
         currentMousePosition.x + gapBetweenCircles * i,
         currentMousePosition.y,
@@ -50,7 +50,9 @@ function updateCirclePositions(circles: Circle[]) {
     }
     return
   }
-  for (let i = 0; i < 2; i++) {
+
+  //updating circles
+  for (let i = 0; i < 4; i++) {
     if (i == 0) {
       circles[i].x = currentMousePosition.x
       circles[i].y = currentMousePosition.y
@@ -60,15 +62,27 @@ function updateCirclePositions(circles: Circle[]) {
 
     /// need to add stuff here
 
-    circles[i].x = currentMousePosition.x + gapBetweenCircles * i
-    circles[i].y = currentMousePosition.y + gapBetweenCircles * i
-    console.log(
-      distanceBetweenPoints(
-        { x1: circles[i - 1].x, y1: circles[i - 1].y },
-        { x2: circles[i].x, y2: circles[i].y }
-      )
-    )
-    // console.log("updated circle 1")
+    // check distance between current circle and the one before
+    // positions of both circles
+    const x1 = circles[i - 1].x
+    const y1 = circles[i - 1].y
+    const x2 = circles[i].x
+    const y2 = circles[i].y
+    const distance = distanceBetweenPoints({ x1, y1 }, { x2, y2 })
+
+    // console.log(distance)
+    if (distance > gapBetweenCircles) {
+      console.log("out of range")
+
+      const ratioOfDistances = gapBetweenCircles / distance
+
+      // calculating the required point that is in range of the prev circle
+
+      const x3 = (1 - ratioOfDistances) * x1 + ratioOfDistances * x2
+      const y3 = (1 - ratioOfDistances) * y1 + ratioOfDistances * y2
+      circles[i].x = x3
+      circles[i].y = y3
+    }
   }
 }
 
