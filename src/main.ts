@@ -27,7 +27,7 @@ const radiusOfCircle = 10
 const numberOfCircles = 3
 
 function init() {
-  updateCirclePositions(circles)
+  // updateCirclePositions(circles, context)
   window.requestAnimationFrame(draw)
 }
 
@@ -51,7 +51,25 @@ function distanceBetweenPoints(pointA: Point, pointB: Point): number {
 //   return Math.acos((a + b - c) / Math.sqrt(4 * a * b))
 // }
 function calculateAngleFromXAxis(pointA: Point, pointB: Point): number {
+  // returns the angle AB makes with the X axis (with A as center)
   return Math.atan2(pointB.y - pointA.y, pointB.x - pointA.x) //* 180) / Math.PI
+}
+function calculateAngleDifference(pointA: Point, pointB: Point, pointC: Point) {
+  // Calculate the angles of lines AB and BC
+  let angleAB = calculateAngleFromXAxis(pointA, pointB)
+  let angleBC = calculateAngleFromXAxis(pointB, pointC)
+
+  // Calculate the difference between the angles
+  let angleDifference = angleBC - angleAB
+
+  // Adjust the angle difference to be within the range [-π, π]
+  if (angleDifference > Math.PI) {
+    angleDifference -= 2 * Math.PI
+  } else if (angleDifference < -Math.PI) {
+    angleDifference += 2 * Math.PI
+  }
+
+  return angleDifference
 }
 function calculateAngle(A: Point, B: Point, C: Point) {
   // Vectors AB and BC
@@ -124,10 +142,10 @@ function findRotatedPoint(point: Point, center: Point, angle: number) {
   return { x: rotatedX, y: rotatedY }
 }
 
-function normalizeAngle(angle: number) {
-  return ((angle % 360) + 360) % 360
-}
-function updateCirclePositions(circles: Circle[]) {
+function updateCirclePositions(
+  circles: Circle[],
+  context: CanvasRenderingContext2D
+) {
   // initialising circles
   if (circles.length == 0) {
     for (let i = 0; i < numberOfCircles; i++) {
@@ -183,125 +201,142 @@ function updateCirclePositions(circles: Circle[]) {
     /* ANGLE CONSTRAINT */
     if (i < circles.length - 1) {
       // co-ords to the next circle
-      const x3 = circles[i + 1].position.x
-      const y3 = circles[i + 1].position.y
       const nextPoint: Point = {
         x: circles[i + 1].position.x,
         y: circles[i + 1].position.y,
       }
 
-      //////////////////////////////////////////
-      // if (i == 1) {
-      // the above "if" is here for testing purposes, otherwise the logs will be flooded
-
-      // check for angle
-      const angle = calculateAngle(previousPoint, currentPoint, nextPoint)
-      // console.log(angle)
-      const parentLineAngle = calculateAngleFromXAxis(
-        previousPoint,
-        currentPoint
+      console.log(
+        // toDegrees(calculateAngleFromXAxis(previousPoint, currentPoint))
+        {
+          calcAngleDiff: toDegrees(
+            calculateAngleDifference(previousPoint, currentPoint, nextPoint)
+          ),
+          calcAngleFromXDiff: toDegrees(
+            calculateAngleFromXAxis(currentPoint, nextPoint) -
+              calculateAngleFromXAxis(currentPoint, previousPoint)
+          ),
+        }
       )
+      drawLine(context, previousPoint, currentPoint)
+      drawLine(context, currentPoint, nextPoint)
 
-      // "Normal" is the angle normalized to 0 to 360 instead of -180 to 180
-      const parentLineAngleNormal =
-        parentLineAngle < 0
-          ? 180 + (180 - parentLineAngle * Math.sign(parentLineAngle))
-          : parentLineAngle
-      const childLineAngle = calculateAngleFromXAxis(currentPoint, nextPoint)
-      const childLineAngleNormal =
-        childLineAngle < 0
-          ? 180 + (180 - childLineAngle * Math.sign(childLineAngle))
-          : childLineAngle
-      let parentChildNormalDiff = parentLineAngleNormal - childLineAngleNormal
-      let parentChildDiff = parentLineAngle - childLineAngle
+      drawArc(
+        context,
+        currentPoint,
+        radiusOfCircle + gapBetweenCircles,
+        calculateAngleFromXAxis(currentPoint, previousPoint),
+        calculateAngleFromXAxis(currentPoint, nextPoint),
 
-      // if (parentChildNormalDiff * Math.sign(parentChildNormalDiff) < )
-      // if (parentLineAngleNormal > childLineAngleNormal) {
-      //   myRotation
+        false
+      )
+      // const x3 = circles[i + 1].position.x
+      // const y3 = circles[i + 1].position.y
+      // //////////////////////////////////////////
+      // // if (i == 1) {
+      // // the above "if" is here for testing purposes, otherwise the logs will be flooded
+      // // check for angle
+      // const angle = calculateAngle(previousPoint, currentPoint, nextPoint)
+      // // console.log(angle)
+      // const parentLineAngle = calculateAngleFromXAxis(
+      //   previousPoint,
+      //   currentPoint
+      // )
+      // // "Normal" is the angle normalized to 0 to 360 instead of -180 to 180
+      // const parentLineAngleNormal =
+      //   parentLineAngle < 0
+      //     ? 180 + (180 - parentLineAngle * Math.sign(parentLineAngle))
+      //     : parentLineAngle
+      // const childLineAngle = calculateAngleFromXAxis(currentPoint, nextPoint)
+      // const childLineAngleNormal =
+      //   childLineAngle < 0
+      //     ? 180 + (180 - childLineAngle * Math.sign(childLineAngle))
+      //     : childLineAngle
+      // let parentChildNormalDiff = parentLineAngleNormal - childLineAngleNormal
+      // let parentChildDiff = parentLineAngle - childLineAngle
+      // // if (parentChildNormalDiff * Math.sign(parentChildNormalDiff) < )
+      // // if (parentLineAngleNormal > childLineAngleNormal) {
+      // //   myRotation
+      // // }
+      // let angleDifference = childLineAngle - parentLineAngle
+      // // normalizing the angle to be between -pi to pi
+      // if (angleDifference > Math.PI) angleDifference -= Math.PI * 2
+      // else if (angleDifference < -Math.PI) angleDifference += Math.PI * 2
+      // // determines the direction of the rotation
+      // // if (parentLineAngle > childLineAngle) {
+      // //   rotationDirection = "clockwise"
+      // // }
+      // // let rotationDirection = angleDifference > 0 ? -1 : 1
+      // // let rotationAngle =
+      // //   Math.sign(90 - angle) * (90 - angle) * rotationDirection
+      // // console.log({
+      // //   parentLineAngleNormal,
+      // //   childLineAngleNormal,
+      // //   parentLineAngle,
+      // //   childLineAngle,
+      // // parentChildNormalDiff,
+      // // parentChildDiff,
+      // // angle,
+      // // rotationDirection,
+      // // rotationAngle: -(90 - angle) * rotationDirection,
+      // // rotationAngle: -(90 - angleDiff) * rotationDirection,
+      // // })
+      // // let rotationAngle = Math.PI / 4 - angleDifference
+      // // console.log(toDegrees(angleDifference))
+      // if (angleDifference > toRadians(90) || angleDifference < toRadians(-90)) {
+      //   let rotationDirection = 1
+      //   if (angleDifference < 0) {
+      //     // console.log("clockwise")
+      //     rotationDirection = 1
+      //   } else if (angleDifference > 0) {
+      //     // console.log("counter-clockwise")
+      //     rotationDirection = -1
+      //   }
+      //   let rotationAngle = 0
+      //   if (angleDifference > 0) {
+      //     // rotationAngle = toRadians(90) - angleDifference
+      //     rotationAngle = toRadians(90) - angleDifference
+      //     rotationAngle *= Math.sign(rotationAngle)
+      //   } else {
+      //     rotationAngle = toRadians(90) + angleDifference
+      //     rotationAngle *= Math.sign(rotationAngle)
+      //   }
+      //   // const rotationAngle = 30 * rotationDirection
+      //   // if (rotationAngle > 45) {
+      //   // console.warn({
+      //   //   parentLineAngleNormal,
+      //   //   childLineAngleNormal,
+      //   //   angle,
+      //   //   rotationAngle,
+      //   //   rotationDirection,
+      //   // })
+      //   // }
+      //   // const rotatedPoint = rotatePoint(
+      //   //   nextPoint,
+      //   //   currentPoint,
+      //   //   rotationAngle
+      //   //   // -(90 - angleDiff) * rotationDirection
+      //   // )
+      //   console.log({
+      //     // angle_diff: toDegrees(angleDifference),
+      //     rotationDirection,
+      //     rotation_angle: rotationAngle * rotationDirection,
+      //   })
+      //   rotationAngle = rotationAngle * rotationDirection
+      //   const rotatedPoint = findRotatedPoint(
+      //     nextPoint,
+      //     currentPoint,
+      //     rotationAngle
+      //   )
+      //   circles[i + 1].position.x = rotatedPoint.x
+      //   circles[i + 1].position.y = rotatedPoint.y
       // }
-
-      let angleDifference = childLineAngle - parentLineAngle
-
-      // normalizing the angle to be between -pi to pi
-      if (angleDifference > Math.PI) angleDifference -= Math.PI * 2
-      else if (angleDifference < -Math.PI) angleDifference += Math.PI * 2
-      // determines the direction of the rotation
-      // if (parentLineAngle > childLineAngle) {
-      //   rotationDirection = "clockwise"
       // }
-      // let rotationDirection = angleDifference > 0 ? -1 : 1
-      // let rotationAngle =
-      //   Math.sign(90 - angle) * (90 - angle) * rotationDirection
-      // console.log({
-      //   parentLineAngleNormal,
-      //   childLineAngleNormal,
-      //   parentLineAngle,
-      //   childLineAngle,
-      // parentChildNormalDiff,
-      // parentChildDiff,
-      // angle,
-      // rotationDirection,
-      // rotationAngle: -(90 - angle) * rotationDirection,
-      // rotationAngle: -(90 - angleDiff) * rotationDirection,
-      // })
-      // let rotationAngle = Math.PI / 4 - angleDifference
-      // console.log(toDegrees(angleDifference))
-      if (angleDifference > toRadians(90) || angleDifference < toRadians(-90)) {
-        let rotationDirection = 1
-        if (angleDifference < 0) {
-          // console.log("clockwise")
-          rotationDirection = 1
-        } else if (angleDifference > 0) {
-          // console.log("counter-clockwise")
-          rotationDirection = -1
-        }
-        let rotationAngle = 0
-        if (angleDifference > 0) {
-          // rotationAngle = toRadians(90) - angleDifference
-          rotationAngle = toRadians(90) - angleDifference
-          rotationAngle *= Math.sign(rotationAngle)
-        } else {
-          rotationAngle = toRadians(90) + angleDifference
-          rotationAngle *= Math.sign(rotationAngle)
-        }
-        // const rotationAngle = 30 * rotationDirection
-        // if (rotationAngle > 45) {
-        // console.warn({
-        //   parentLineAngleNormal,
-        //   childLineAngleNormal,
-        //   angle,
-        //   rotationAngle,
-        //   rotationDirection,
-        // })
-        // }
-        // const rotatedPoint = rotatePoint(
-        //   nextPoint,
-        //   currentPoint,
-        //   rotationAngle
-        //   // -(90 - angleDiff) * rotationDirection
-        // )
-        console.log({
-          // angle_diff: toDegrees(angleDifference),
-          rotationDirection,
-          rotation_angle: rotationAngle * rotationDirection,
-        })
-        rotationAngle = rotationAngle * rotationDirection
-        const rotatedPoint = findRotatedPoint(
-          nextPoint,
-          currentPoint,
-          rotationAngle
-        )
-        circles[i + 1].position.x = rotatedPoint.x
-        circles[i + 1].position.y = rotatedPoint.y
-      }
-      // }
-
       /////////////////////////////////////////
       // angle b/w the previous point to the current
       // const angleWithPreviousCircle = Math.atan2(dy, dx)
       // const angleWithNextCircle =
       // (findAngle(x1, y1, x2, y2, x3, y3) * 180) / Math.PI
-
       ///////////////////////////////
       // if (angleWithNextCircle < 90) {
       //   console.log(angleWithNextCircle)
@@ -313,7 +348,6 @@ function updateCirclePositions(circles: Circle[]) {
       //     (radiusOfCircle + gapBetweenCircles) * Math.sin(Math.PI / 2)
       // }
       // if (i == 1) console.log(angleWithNextCircle)
-
       // x = cos(a)  ; y = sin(a)
     }
   }
@@ -333,7 +367,7 @@ function getMousePosition(
   currentMousePosition = position
   // }
 }
-updateCirclePositions(circles)
+// updateCirclePositions(circles)
 function drawCircles(context: CanvasRenderingContext2D, circles: Circle[]) {
   circles.forEach((circle) => {
     context.beginPath()
@@ -348,7 +382,37 @@ function drawCircles(context: CanvasRenderingContext2D, circles: Circle[]) {
     context.fill()
   })
 }
-
+function drawLine(
+  context: CanvasRenderingContext2D,
+  pointA: Point,
+  pointB: Point
+) {
+  context.beginPath()
+  context.moveTo(pointA.x, pointA.y)
+  context.lineTo(pointB.x, pointB.y)
+  context.closePath()
+  context.stroke()
+}
+function drawArc(
+  context: CanvasRenderingContext2D,
+  center: Point,
+  radius: number,
+  startAngle: number,
+  endAngle: number,
+  counterclockwise: boolean
+) {
+  context.beginPath()
+  context.arc(
+    center.x,
+    center.y,
+    radius,
+    startAngle,
+    endAngle,
+    counterclockwise
+  )
+  // context.closePath()
+  context.stroke()
+}
 function draw() {
   const canvas = document.querySelector("canvas")
 
@@ -361,11 +425,11 @@ function draw() {
   context.fillRect(0, 0, 1280, 720)
   // console.log(currentMousePosition)
 
-  updateCirclePositions(circles)
+  updateCirclePositions(circles, context)
   // drawing the circle
   drawCircles(context, circles)
 
   window.requestAnimationFrame(draw)
 }
 
-init()
+draw()
