@@ -104,7 +104,20 @@ function toRadians(degrees: number) {
 function toDegrees(radians: number) {
   return radians * (180 / Math.PI)
 }
-
+function toBool(value: any) {
+  switch (value) {
+    case null:
+      return false
+    case -1:
+      return false
+    case 0:
+      return false
+    case 1:
+      return true
+    default:
+      return false
+  }
+}
 // function rotatePoint(point: Point, center: Point, angle: number) {
 //   const radians = angle * (Math.PI / 180)
 //   const cos = Math.cos(radians)
@@ -212,14 +225,25 @@ function updateCirclePositions(
           calcAngleDiff: toDegrees(
             calculateAngleDifference(previousPoint, currentPoint, nextPoint)
           ),
-          calcAngleFromXDiff: toDegrees(
-            calculateAngleFromXAxis(currentPoint, nextPoint) -
-              calculateAngleFromXAxis(currentPoint, previousPoint)
-          ),
+          // calcAngleFromXDiff: toDegrees(
+          //   calculateAngleFromXAxis(currentPoint, nextPoint) -
+          //     calculateAngleFromXAxis(currentPoint, previousPoint)
+          // ),
         }
       )
       drawLine(context, previousPoint, currentPoint)
       drawLine(context, currentPoint, nextPoint)
+
+      let arcColor = "white"
+
+      if (
+        calculateAngleDifference(previousPoint, currentPoint, nextPoint) >
+          Math.PI / 2 ||
+        calculateAngleDifference(previousPoint, currentPoint, nextPoint) <
+          -Math.PI / 2
+      ) {
+        arcColor = "red"
+      }
 
       drawArc(
         context,
@@ -228,7 +252,12 @@ function updateCirclePositions(
         calculateAngleFromXAxis(currentPoint, previousPoint),
         calculateAngleFromXAxis(currentPoint, nextPoint),
 
-        false
+        toBool(
+          Math.sign(
+            calculateAngleDifference(previousPoint, currentPoint, nextPoint)
+          )
+        ),
+        arcColor
       )
       // const x3 = circles[i + 1].position.x
       // const y3 = circles[i + 1].position.y
@@ -399,8 +428,10 @@ function drawArc(
   radius: number,
   startAngle: number,
   endAngle: number,
-  counterclockwise: boolean
+  counterclockwise: boolean,
+  color: string
 ) {
+  context.strokeStyle = color
   context.beginPath()
   context.arc(
     center.x,
