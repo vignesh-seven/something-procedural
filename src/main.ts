@@ -51,7 +51,7 @@ function distanceBetweenPoints(pointA: Point, pointB: Point): number {
 //   return Math.acos((a + b - c) / Math.sqrt(4 * a * b))
 // }
 function calculateAngleFromXAxis(pointA: Point, pointB: Point): number {
-  return (Math.atan2(pointB.y - pointA.y, pointB.x - pointA.x) * 180) / Math.PI
+  return Math.atan2(pointB.y - pointA.y, pointB.x - pointA.x) //* 180) / Math.PI
 }
 function calculateAngle(A: Point, B: Point, C: Point) {
   // Vectors AB and BC
@@ -80,6 +80,13 @@ function calculateAngle(A: Point, B: Point, C: Point) {
   return angleDegrees
 }
 
+function toRadians(degrees: number) {
+  return degrees * (Math.PI / 180)
+}
+function toDegrees(radians: number) {
+  return radians * (180 / Math.PI)
+}
+
 // function rotatePoint(point: Point, center: Point, angle: number) {
 //   const radians = angle * (Math.PI / 180)
 //   const cos = Math.cos(radians)
@@ -94,7 +101,7 @@ function calculateAngle(A: Point, B: Point, C: Point) {
 //   return { x: rotatedX, y: rotatedY }
 // }
 function rotatePoint(point: Point, center: Point, angle: number) {
-  let radians = angle * (Math.PI / 180) // Convert to radians
+  let radians = angle // * (Math.PI / 180) // Convert to radians
   let cos = Math.cos(radians)
   let sin = Math.sin(radians)
 
@@ -103,6 +110,20 @@ function rotatePoint(point: Point, center: Point, angle: number) {
 
   return { x: x, y: y }
 }
+
+function findRotatedPoint(point: Point, center: Point, angle: number) {
+  // const [x1, y1] = point
+  // const [x2, y2] = B
+
+  const r = Math.sqrt((center.x - point.x) ** 2 + (center.y - point.y) ** 2)
+  const theta = Math.atan2(center.y - point.y, center.x - point.x)
+
+  const rotatedX = center.x + r * Math.cos(theta + angle)
+  const rotatedY = center.y + r * Math.sin(theta + angle)
+
+  return { x: rotatedX, y: rotatedY }
+}
+
 function normalizeAngle(angle: number) {
   return ((angle % 360) + 360) % 360
 }
@@ -193,30 +214,56 @@ function updateCirclePositions(circles: Circle[]) {
           : childLineAngle
       let parentChildNormalDiff = parentLineAngleNormal - childLineAngleNormal
       let parentChildDiff = parentLineAngle - childLineAngle
+
+      // if (parentChildNormalDiff * Math.sign(parentChildNormalDiff) < )
+      // if (parentLineAngleNormal > childLineAngleNormal) {
+      //   myRotation
+      // }
+
+      let angleDifference = childLineAngle - parentLineAngle
+
+      // normalizing the angle to be between -pi to pi
+      if (angleDifference > Math.PI) angleDifference -= Math.PI * 2
+      else if (angleDifference < -Math.PI) angleDifference += Math.PI * 2
       // determines the direction of the rotation
       // if (parentLineAngle > childLineAngle) {
       //   rotationDirection = "clockwise"
       // }
-      let rotationDirection = -1
-      if (parentLineAngle >= childLineAngle) {
-        rotationDirection = 1
-      }
+      // let rotationDirection = angleDifference > 0 ? -1 : 1
       // let rotationAngle =
       //   Math.sign(90 - angle) * (90 - angle) * rotationDirection
-      console.log({
-        // parentLineAngleNormal,
-        // childLineAngleNormal,
-        // parentLineAngle,
-        // childLineAngle,
-        parentChildNormalDiff,
-        parentChildDiff,
-        // angle,
-        // rotationDirection,
-        // rotationAngle: -(90 - angle) * rotationDirection,
-        // rotationAngle: -(90 - angleDiff) * rotationDirection,
-      })
-      if (angle > 90) {
-        const rotationAngle = (angle - 90) * rotationDirection
+      // console.log({
+      //   parentLineAngleNormal,
+      //   childLineAngleNormal,
+      //   parentLineAngle,
+      //   childLineAngle,
+      // parentChildNormalDiff,
+      // parentChildDiff,
+      // angle,
+      // rotationDirection,
+      // rotationAngle: -(90 - angle) * rotationDirection,
+      // rotationAngle: -(90 - angleDiff) * rotationDirection,
+      // })
+      // let rotationAngle = Math.PI / 4 - angleDifference
+      // console.log(toDegrees(angleDifference))
+      if (angleDifference > toRadians(90) || angleDifference < toRadians(-90)) {
+        let rotationDirection = 1
+        if (angleDifference < 0) {
+          // console.log("clockwise")
+          rotationDirection = 1
+        } else if (angleDifference > 0) {
+          // console.log("counter-clockwise")
+          rotationDirection = -1
+        }
+        let rotationAngle = 0
+        if (angleDifference > 0) {
+          // rotationAngle = toRadians(90) - angleDifference
+          rotationAngle = toRadians(90) - angleDifference
+          rotationAngle *= Math.sign(rotationAngle)
+        } else {
+          rotationAngle = toRadians(90) + angleDifference
+          rotationAngle *= Math.sign(rotationAngle)
+        }
         // const rotationAngle = 30 * rotationDirection
         // if (rotationAngle > 45) {
         // console.warn({
@@ -233,8 +280,19 @@ function updateCirclePositions(circles: Circle[]) {
         //   rotationAngle
         //   // -(90 - angleDiff) * rotationDirection
         // )
-        // circles[i + 1].position.x = rotatedPoint.x
-        // circles[i + 1].position.y = rotatedPoint.y
+        console.log({
+          // angle_diff: toDegrees(angleDifference),
+          rotationDirection,
+          rotation_angle: rotationAngle * rotationDirection,
+        })
+        rotationAngle = rotationAngle * rotationDirection
+        const rotatedPoint = findRotatedPoint(
+          nextPoint,
+          currentPoint,
+          rotationAngle
+        )
+        circles[i + 1].position.x = rotatedPoint.x
+        circles[i + 1].position.y = rotatedPoint.y
       }
       // }
 
