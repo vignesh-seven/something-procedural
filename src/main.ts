@@ -238,17 +238,42 @@ function updateCirclePositions(
 
       if (
         calculateAngleDifference(previousPoint, currentPoint, nextPoint) >
-          Math.PI / 2 ||
-        calculateAngleDifference(previousPoint, currentPoint, nextPoint) <
-          -Math.PI / 2
+        Math.PI / 2
       ) {
         arcColor = "red"
+        const adjustedPoint = findRotatedPoint(
+          previousPoint,
+          currentPoint,
+          // -(
+          // calculateAngleDifference(previousPoint, currentPoint, nextPoint) -
+          Math.PI / 2
+          // )
+        )
+        drawLine(context, currentPoint, adjustedPoint)
+        circles[i + 1].position.x = adjustedPoint.x
+        circles[i + 1].position.y = adjustedPoint.y
+      } else if (
+        calculateAngleDifference(previousPoint, currentPoint, nextPoint) <
+        -Math.PI / 2
+      ) {
+        arcColor = "blue"
+        const adjustedPoint = findRotatedPoint(
+          previousPoint,
+          currentPoint,
+          // -(
+          // calculateAngleDifference(previousPoint, currentPoint, nextPoint) -
+          -Math.PI / 2
+          // )
+        )
+        drawLine(context, currentPoint, adjustedPoint)
+        circles[i + 1].position.x = adjustedPoint.x
+        circles[i + 1].position.y = adjustedPoint.y
       }
 
       drawArc(
         context,
         currentPoint,
-        radiusOfCircle + gapBetweenCircles,
+        gapBetweenCircles,
         calculateAngleFromXAxis(currentPoint, previousPoint),
         calculateAngleFromXAxis(currentPoint, nextPoint),
 
@@ -259,6 +284,7 @@ function updateCirclePositions(
         ),
         arcColor
       )
+
       // const x3 = circles[i + 1].position.x
       // const y3 = circles[i + 1].position.y
       // //////////////////////////////////////////
