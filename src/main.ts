@@ -24,7 +24,9 @@ let circles: Circle[] = []
 
 const gapBetweenCircles = 45
 const radiusOfCircle = 10
-const numberOfCircles = 3
+const numberOfCircles = 10
+
+const DRAW_GIZMOS = true
 
 function init() {
   // updateCirclePositions(circles, context)
@@ -236,6 +238,7 @@ function updateCirclePositions(
 
       let arcColor = "white"
 
+      // check the angle between the circles & rotate the next point if needed
       if (
         calculateAngleDifference(previousPoint, currentPoint, nextPoint) >
         Math.PI / 2
@@ -442,6 +445,7 @@ function drawLine(
   pointA: Point,
   pointB: Point
 ) {
+  if (!DRAW_GIZMOS) return
   context.beginPath()
   context.moveTo(pointA.x, pointA.y)
   context.lineTo(pointB.x, pointB.y)
@@ -457,6 +461,7 @@ function drawArc(
   counterclockwise: boolean,
   color: string
 ) {
+  if (!DRAW_GIZMOS) return
   context.strokeStyle = color
   context.beginPath()
   context.arc(
