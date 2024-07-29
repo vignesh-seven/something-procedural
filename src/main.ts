@@ -25,6 +25,7 @@ let circles: Circle[] = []
 const gapBetweenCircles = 45
 const radiusOfCircle = 10
 const numberOfCircles = 10
+const angleConstraint = toRadians(90) // angle must be given in radians
 
 const DRAW_GIZMOS = true
 
@@ -241,7 +242,7 @@ function updateCirclePositions(
       // check the angle between the circles & rotate the next point if needed
       if (
         calculateAngleDifference(previousPoint, currentPoint, nextPoint) >
-        Math.PI / 2
+        angleConstraint
       ) {
         arcColor = "red"
         const adjustedPoint = findRotatedPoint(
@@ -249,7 +250,7 @@ function updateCirclePositions(
           currentPoint,
           // -(
           // calculateAngleDifference(previousPoint, currentPoint, nextPoint) -
-          Math.PI / 2
+          angleConstraint
           // )
         )
         drawLine(context, currentPoint, adjustedPoint)
@@ -257,7 +258,7 @@ function updateCirclePositions(
         circles[i + 1].position.y = adjustedPoint.y
       } else if (
         calculateAngleDifference(previousPoint, currentPoint, nextPoint) <
-        -Math.PI / 2
+        -angleConstraint
       ) {
         arcColor = "blue"
         const adjustedPoint = findRotatedPoint(
@@ -265,7 +266,7 @@ function updateCirclePositions(
           currentPoint,
           // -(
           // calculateAngleDifference(previousPoint, currentPoint, nextPoint) -
-          -Math.PI / 2
+          -angleConstraint
           // )
         )
         drawLine(context, currentPoint, adjustedPoint)
